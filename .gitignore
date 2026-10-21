@@ -1,0 +1,43 @@
+# ==============================================================================
+# SHINKŌ SYSTEMS — .gitignore (VitaCare Ocupacional)
+# ==============================================================================
+
+# Sistema Operacional macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Variáveis de Ambiente & Segredos Sensíveis
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.cert
+
+# Dependências & Caches
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+
+# Dumps e Backups Locais
+*.dump
+*.sql.gz
+*.tar.gz
+backups/
+
+# Builds e Temporários
+dist/
+build/
+.cache/
+.temp/

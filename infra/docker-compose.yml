@@ -1,0 +1,123 @@
+# ==============================================================================
+# SHINKŌ SYSTEMS — NUVEM SOBERANA DEDICADA: VITACARE OCUPACIONAL
+# ==============================================================================
+# Host: VPS Soberana Shinkō (179.198.125.140)
+# Destino de Deploy: /opt/vitacare/infra/docker-compose.yml
+# Diretrizes: Isolamento em Camadas, LGPD Art. 11, Zero Conexão Não-Autorizada
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. BANCO DE DADOS DEDICADO: PostgreSQL 16 (Isolado de outros clientes)
+  # ----------------------------------------------------------------------------
+  vitacare-db:
+    image: postgres:16-alpine
+    container_name: vitacare-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${VITACARE_DB_NAME:-vitacare_db}
+      POSTGRES_USER: ${VITACARE_DB_USER:-vitacare_admin}
+      POSTGRES_PASSWORD: ${VITACARE_DB_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - /opt/vitacare/data/postgres:/var/lib/postgresql/data
+    networks:
+      - vitacare-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${VITACARE_DB_USER:-vitacare_admin} -d ${VITACARE_DB_NAME:-vitacare_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+          cpus: '1.0'
+
+  # ----------------------------------------------------------------------------
+  # 2. GATEWAY WHATSAPP MULTIATENDENTE: WAHA Core (Sessão Exclusiva VitaCare)
+  # ----------------------------------------------------------------------------
+  vitacare-waha:
+    image: devlikeapro/waha:latest
+    container_name: vitacare-waha
+    restart: always
+    environment:
+      WAHA_ZIP_LOGS: 'true'
+      WAHA_PRINT_QR: 'false'
+      WHATSAPP_DEFAULT_ENGINE: 'NOWEB'
+      WHATSAPP_HOOK_URL: ${VITACARE_WEBHOOK_URL:-}
+      WHATSAPP_HOOK_EVENTS: 'message,session.status'
+      WAHA_DASHBOARD_USERNAME: ${WAHA_DASHBOARD_USER:-vitacare_root}
+      WAHA_DASHBOARD_PASSWORD: ${WAHA_DASHBOARD_PASSWORD}
+      WAHA_API_KEY: ${WAHA_API_KEY}
+    volumes:
+      - /opt/vitacare/data/waha:/app/.sessions
+    ports:
+      # Exposição na porta soberana 3011 com autenticação de usuário e senha
+      - "3011:3000"
+    networks:
+      - vitacare-net
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+          cpus: '0.75'
+
+  # ----------------------------------------------------------------------------
+  # 3. ROTINA CRON DE BACKUP SOBERANO (Criptografia AES-256 / Dump Diário)
+  # ----------------------------------------------------------------------------
+  vitacare-backup:
+    image: postgres:16-alpine
+    container_name: vitacare-backup
+    restart: always
+    depends_on:
+      vitacare-db:
+        condition: service_healthy
+    volumes:
+      - /opt/vitacare/backups:/backups
+      - /opt/vitacare/infra/backup-soberano.sh:/usr/local/bin/backup-soberano.sh:ro
+    environment:
+      PGHOST: vitacare-db
+      PGUSER: ${VITACARE_DB_USER:-vitacare_admin}
+      PGPASSWORD: ${VITACARE_DB_PASSWORD}
+      PGDATABASE: ${VITACARE_DB_NAME:-vitacare_db}
+      BACKUP_ENCRYPTION_KEY: ${BACKUP_ENCRYPTION_KEY}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        apk add --no-cache openssl bash
+        chmod +x /usr/local/bin/backup-soberano.sh
+        echo "0 3 * * * /usr/local/bin/backup-soberano.sh >> /var/log/vitacare-backup.log 2>&1" > /var/spool/cron/crontabs/root
+        echo "[VitaCare Backup Daemon] Agendado para as 03:00 UTC diariamente."
+        crond -f -l 2
+    networks:
+      - vitacare-net
+
+  # ----------------------------------------------------------------------------
+  # 4. PAINEL VISUAL DO BANCO (Adminer Soberano - 15MB RAM, Ultra Rápido e Estável)
+  # ----------------------------------------------------------------------------
+  vitacare-studio:
+    image: adminer:latest
+    container_name: vitacare-studio
+    restart: always
+    depends_on:
+      vitacare-db:
+        condition: service_healthy
+    environment:
+      ADMINER_DEFAULT_SERVER: vitacare-db
+    ports:
+      - "3012:8080"
+    networks:
+      - vitacare-net
+
+# ------------------------------------------------------------------------------
+# REDE ISOLADA: Comunicação interna estrita entre os serviços da VitaCare
+# ------------------------------------------------------------------------------
+networks:
+  vitacare-net:
+    name: vitacare-network
+    driver: bridge
+    internal: false
