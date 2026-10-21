@@ -113,6 +113,39 @@ services:
     networks:
       - vitacare-net
 
+  # ----------------------------------------------------------------------------
+  # 5. APLICAÇÃO WEB: CENTRAL MULTIATENDENTE & KANBAN (Porta 3010)
+  # ----------------------------------------------------------------------------
+  vitacare-app:
+    build:
+      context: ../app
+      dockerfile: Dockerfile
+    image: vitacare-central-app:latest
+    container_name: vitacare-app
+    restart: always
+    depends_on:
+      vitacare-db:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      PGHOST: vitacare-db
+      PGPORT: 5432
+      PGUSER: ${VITACARE_DB_USER:-vitacare_admin}
+      PGPASSWORD: ${VITACARE_DB_PASSWORD}
+      PGDATABASE: ${VITACARE_DB_NAME:-vitacare_prod}
+      WAHA_URL: http://vitacare-waha:3000
+      WAHA_API_KEY: ${WAHA_API_KEY}
+      JWT_SECRET: vitacare_jwt_secret_soberano_2026
+    ports:
+      - "3010:3000"
+    networks:
+      - vitacare-net
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+
 # ------------------------------------------------------------------------------
 # REDE ISOLADA: Comunicação interna estrita entre os serviços da VitaCare
 # ------------------------------------------------------------------------------

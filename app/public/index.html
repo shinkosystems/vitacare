@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VitaCare Ocupacional — Central Multiatendente & Gestão Integrada</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            vitacare: {
+              blue: '#0056b3',
+              cyan: '#00a8cc',
+              dark: '#0a192f',
+              hover: '#004494'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b0f19; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    .chat-bubble-in { background-color: #1e293b; color: #f8fafc; border-bottom-left-radius: 2px; }
+    .chat-bubble-out { background-color: #0056b3; color: #ffffff; border-bottom-right-radius: 2px; }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased overflow-hidden select-none">
+
+  <!-- ========================================================================= -->
+  <!-- 1. TELA DE LOGIN DO OPERADOR -->
+  <!-- ========================================================================= -->
+  <div id="login-view" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 p-4">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+      <!-- Glow Decorativo -->
+      <div class="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Logotipo Oficial VitaCare -->
+      <div class="flex justify-center mb-6">
+        <img src="img/logo-vitacare.png" alt="VitaCare Ocupacional" class="h-16 w-auto object-contain">
+      </div>
+
+      <div class="text-center mb-6">
+        <h1 class="text-xl font-bold text-white tracking-tight">Central Multiatendente</h1>
+        <p class="text-xs text-slate-400 mt-1">Acesso exclusivo da equipe operacional e diretoria</p>
+      </div>
+
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">E-mail Corporativo</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+              <i data-feather="mail" class="w-4 h-4"></i>
+            </span>
+            <input type="email" id="login-email" required placeholder="seu.email@vitacareocupacional.com.br"
+              class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Senha de Acesso</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+              <i data-feather="lock" class="w-4 h-4"></i>
+            </span>
+            <input type="password" id="login-senha" required placeholder="••••••••••••"
+              class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
+          </div>
+        </div>
+
+        <div id="login-erro" class="hidden text-xs text-rose-400 bg-rose-950/40 border border-rose-800/60 rounded-lg p-2.5 text-center"></div>
+
+        <button type="submit" id="login-submit-btn"
+          class="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-blue-900/30 transition duration-200 flex items-center justify-center gap-2">
+          <span>Entrar no Sistema</span>
+          <i data-feather="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </form>
+
+      <div class="mt-6 pt-4 border-t border-slate-800/80 text-center">
+        <span class="text-[11px] text-slate-500">Tecnologia Soberana • Shinkō Systems</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. APLICAÇÃO PRINCIPAL (NAVBAR + CORPO) -->
+  <!-- ========================================================================= -->
+  <div id="app-view" class="h-full flex flex-col hidden">
+
+    <!-- Top Navbar -->
+    <header class="h-14 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 z-20 shrink-0">
+      <!-- Marca & Setor -->
+      <div class="flex items-center gap-4">
+        <img src="img/logo-vitacare.png" alt="VitaCare" class="h-8 w-auto">
+        <div class="h-5 w-px bg-slate-800"></div>
+        <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-blue-950/60 text-cyan-400 border border-blue-800/50 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="header-user-setor">Comercial</span>
+        </span>
+      </div>
+
+      <!-- Abas de Navegação -->
+      <nav class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+        <button id="nav-btn-chat" onclick="trocarAbaPrincipal('chat')"
+          class="px-3.5 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-2 bg-blue-600 text-white shadow-sm">
+          <i data-feather="message-square" class="w-3.5 h-3.5"></i>
+          <span>Atendimento WhatsApp</span>
+        </button>
+        <button id="nav-btn-kanban" onclick="trocarAbaPrincipal('kanban')"
+          class="px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition flex items-center gap-2">
+          <i data-feather="trello" class="w-3.5 h-3.5"></i>
+          <span>Demandas (Kanban)</span>
+        </button>
+      </nav>
+
+      <!-- Usuário & Logout -->
+      <div class="flex items-center gap-3">
+        <div class="text-right">
+          <div id="header-user-nome" class="text-xs font-bold text-white">Carregando...</div>
+          <div id="header-user-email" class="text-[10px] text-slate-400">operador@vitacare</div>
+        </div>
+        <button onclick="realizarLogout()" title="Sair do Sistema"
+          class="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition">
+          <i data-feather="log-out" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ======================================================================= -->
+    <!-- 3. VIEW: CHAT MULTIATENDENTE -->
+    <!-- ======================================================================= -->
+    <main id="chat-section" class="flex-1 flex overflow-hidden">
+
+      <!-- Coluna da Esquerda: Lista de Conversas -->
+      <aside class="w-80 md:w-96 bg-slate-900/70 border-r border-slate-800 flex flex-col shrink-0">
+        
+        <!-- Filtros de Fila / Setores -->
+        <div class="p-3 border-b border-slate-800 space-y-2">
+          <!-- Busca -->
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+              <i data-feather="search" class="w-3.5 h-3.5"></i>
+            </span>
+            <input type="text" id="filtro-busca" placeholder="Buscar cliente, CNPJ ou telefone..."
+              oninput="debounceCarregarConversas()"
+              class="w-full pl-9 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+          </div>
+
+          <!-- Pílulas de Setor -->
+          <div class="flex gap-1 overflow-x-auto pb-1 text-[11px] font-medium">
+            <button onclick="filtrarSetor('todos')" id="pill-setor-todos"
+              class="px-2.5 py-1 rounded-md bg-blue-600 text-white shrink-0">Todas</button>
+            <button onclick="filtrarSetor('comercial')" id="pill-setor-comercial"
+              class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 hover:bg-slate-700 shrink-0">Comercial</button>
+            <button onclick="filtrarSetor('agendamento')" id="pill-setor-agendamento"
+              class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 hover:bg-slate-700 shrink-0">Agendamento</button>
+            <button onclick="filtrarSetor('tecnico')" id="pill-setor-tecnico"
+              class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 hover:bg-slate-700 shrink-0">Técnico SST</button>
+          </div>
+        </div>
+
+        <!-- Lista de Conversas -->
+        <div id="lista-conversas" class="flex-1 overflow-y-auto divide-y divide-slate-800/60">
+          <div class="p-8 text-center text-xs text-slate-500">Carregando atendimentos...</div>
+        </div>
+      </aside>
+
+      <!-- Coluna Central: Janela do Chat Ativo -->
+      <section class="flex-1 flex flex-col bg-slate-950 relative">
+
+        <!-- Estado Vazio (Nenhuma conversa selecionada) -->
+        <div id="chat-empty-state" class="flex-1 flex flex-col items-center justify-center p-8 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 mb-4 shadow-inner">
+            <i data-feather="message-circle" class="w-8 h-8 text-cyan-500"></i>
+          </div>
+          <h3 class="text-sm font-semibold text-white">Nenhuma conversa selecionada</h3>
+          <p class="text-xs text-slate-400 mt-1 max-w-sm">
+            Selecione uma empresa ou contato na lista lateral para iniciar o atendimento ou transferir de fila.
+          </p>
+        </div>
+
+        <!-- Conteúdo do Chat Ativo -->
+        <div id="chat-active-state" class="flex-1 flex flex-col hidden">
+          
+          <!-- Header da Conversa -->
+          <div class="h-16 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between px-6 shrink-0">
+            <div class="flex items-center gap-3">
+              <div id="active-chat-avatar" class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-white text-sm">
+                VT
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h2 id="active-chat-nome" class="text-sm font-bold text-white">Nome do Cliente</h2>
+                  <span id="active-chat-setor-badge" class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-blue-950 text-cyan-400 border border-blue-800">
+                    Comercial
+                  </span>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-slate-400">
+                  <span id="active-chat-telefone">Telefone</span>
+                  <span>•</span>
+                  <span id="active-chat-empresa" class="text-cyan-400">Empresa não vinculada</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ações Rápidas -->
+            <div class="flex items-center gap-2">
+              <button onclick="abrirModalTransferir()" 
+                class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                <i data-feather="repeat" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span>Transferir Fila</span>
+              </button>
+              <button onclick="abrirModalCriarDemanda()" 
+                class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg shadow-sm transition flex items-center gap-1.5">
+                <i data-feather="plus-square" class="w-3.5 h-3.5"></i>
+                <span>Criar Tarefa</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Mensagens Históricas (Scrollable) -->
+          <div id="mensagens-container" class="flex-1 overflow-y-auto p-6 space-y-4">
+            <!-- Mensagens injetadas via JS -->
+          </div>
+
+          <!-- Barra de Envio de Mensagem -->
+          <div class="p-4 bg-slate-900 border-t border-slate-800 shrink-0">
+            <form id="chat-send-form" class="flex items-end gap-2">
+              <div class="flex-1 bg-slate-950 border border-slate-800 rounded-xl focus-within:border-cyan-500 focus-within:ring-1 focus-within:ring-cyan-500 transition flex items-center px-3 py-1.5">
+                <textarea id="chat-input-text" rows="1" placeholder="Digite uma resposta para o cliente... (Enter envia)"
+                  onkeydown="tratarKeyDownChat(event)"
+                  class="w-full bg-transparent text-sm text-white placeholder-slate-500 resize-none focus:outline-none max-h-32"></textarea>
+              </div>
+              <button type="submit" id="chat-send-btn"
+                class="h-10 w-10 bg-blue-600 hover:bg-blue-500 text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/30 transition shrink-0">
+                <i data-feather="send" class="w-4 h-4"></i>
+              </button>
+            </form>
+          </div>
+
+        </div>
+
+      </section>
+    </main>
+
+    <!-- ======================================================================= -->
+    <!-- 4. VIEW: QUADRO KANBAN DE DEMANDAS -->
+    <!-- ======================================================================= -->
+    <main id="kanban-section" class="flex-1 flex flex-col bg-slate-950 overflow-hidden hidden">
+      
+      <!-- Header do Kanban -->
+      <div class="h-14 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 shrink-0">
+        <div class="flex items-center gap-3">
+          <h2 class="text-sm font-bold text-white flex items-center gap-2">
+            <i data-feather="trello" class="w-4 h-4 text-cyan-400"></i>
+            <span>Quadro de Demandas & Tarefas SST</span>
+          </h2>
+          <span class="text-xs text-slate-500">|</span>
+          <div class="flex gap-1 text-xs">
+            <button onclick="filtrarKanbanSetor('todos')" id="kfilter-todos" class="px-2.5 py-1 rounded bg-blue-600 text-white">Todas</button>
+            <button onclick="filtrarKanbanSetor('comercial')" id="kfilter-comercial" class="px-2.5 py-1 rounded bg-slate-800 text-slate-400 hover:text-white">Comercial</button>
+            <button onclick="filtrarKanbanSetor('agendamento')" id="kfilter-agendamento" class="px-2.5 py-1 rounded bg-slate-800 text-slate-400 hover:text-white">Agendamento</button>
+            <button onclick="filtrarKanbanSetor('tecnico')" id="kfilter-tecnico" class="px-2.5 py-1 rounded bg-slate-800 text-slate-400 hover:text-white">Técnico SST</button>
+          </div>
+        </div>
+
+        <button onclick="abrirModalCriarDemanda(null)" 
+          class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg shadow transition flex items-center gap-1.5">
+          <i data-feather="plus" class="w-3.5 h-3.5"></i>
+          <span>Nova Demanda</span>
+        </button>
+      </div>
+
+      <!-- Colunas do Kanban -->
+      <div class="flex-1 overflow-x-auto p-6 flex gap-6">
+        
+        <!-- Coluna 1: Triagem -->
+        <div class="w-80 flex flex-col bg-slate-900/80 border border-slate-800/80 rounded-2xl overflow-hidden shrink-0">
+          <div class="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900">
+            <span class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              Triagem / Novas
+            </span>
+            <span id="badge-count-triagem" class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-semibold">0</span>
+          </div>
+          <div id="coluna-triagem" class="flex-1 p-3 space-y-3 overflow-y-auto">
+            <!-- Cards injetados via JS -->
+          </div>
+        </div>
+
+        <!-- Coluna 2: Em Agendamento -->
+        <div class="w-80 flex flex-col bg-slate-900/80 border border-slate-800/80 rounded-2xl overflow-hidden shrink-0">
+          <div class="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900">
+            <span class="text-xs font-bold text-blue-400 uppercase tracking-wider flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+              Em Agendamento
+            </span>
+            <span id="badge-count-agendamento" class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-semibold">0</span>
+          </div>
+          <div id="coluna-em_agendamento" class="flex-1 p-3 space-y-3 overflow-y-auto">
+            <!-- Cards injetados via JS -->
+          </div>
+        </div>
+
+        <!-- Coluna 3: Aguardando Exame / Laudo -->
+        <div class="w-80 flex flex-col bg-slate-900/80 border border-slate-800/80 rounded-2xl overflow-hidden shrink-0">
+          <div class="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900">
+            <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+              Aguardando Exame / Laudo
+            </span>
+            <span id="badge-count-exame" class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-semibold">0</span>
+          </div>
+          <div id="coluna-aguardando_exame" class="flex-1 p-3 space-y-3 overflow-y-auto">
+            <!-- Cards injetados via JS -->
+          </div>
+        </div>
+
+        <!-- Coluna 4: Concluído -->
+        <div class="w-80 flex flex-col bg-slate-900/80 border border-slate-800/80 rounded-2xl overflow-hidden shrink-0">
+          <div class="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900">
+            <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              Concluído
+            </span>
+            <span id="badge-count-concluido" class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-semibold">0</span>
+          </div>
+          <div id="coluna-concluido" class="flex-1 p-3 space-y-3 overflow-y-auto">
+            <!-- Cards injetados via JS -->
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 5. MODAL: TRANSFERIR SETOR DA CONVERSA -->
+  <!-- ========================================================================= -->
+  <div id="modal-transferir" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+      <h3 class="text-sm font-bold text-white mb-1 flex items-center gap-2">
+        <i data-feather="repeat" class="w-4 h-4 text-cyan-400"></i>
+        <span>Transferir Conversa de Fila</span>
+      </h3>
+      <p class="text-xs text-slate-400 mb-4">Escolha para qual setor deseja encaminhar este atendimento:</p>
+
+      <form id="form-transferir" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Novo Setor</label>
+          <select id="select-novo-setor" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500">
+            <option value="comercial">Comercial & Propostas</option>
+            <option value="agendamento">Agendamento de Exames</option>
+            <option value="tecnico">Técnico SST & Laudos</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="fecharModalTransferir()"
+            class="px-3 py-1.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition">
+            Cancelar
+          </button>
+          <button type="submit"
+            class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow transition">
+            Confirmar Transferência
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 6. MODAL: CRIAR NOVA DEMANDA KANBAN -->
+  <!-- ========================================================================= -->
+  <div id="modal-demanda" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+      <h3 class="text-sm font-bold text-white mb-1 flex items-center gap-2">
+        <i data-feather="plus-circle" class="w-4 h-4 text-cyan-400"></i>
+        <span>Criar Demanda no Kanban</span>
+      </h3>
+      <p class="text-xs text-slate-400 mb-4">Transforme a solicitação do cliente em uma tarefa com prazo:</p>
+
+      <form id="form-demanda" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Título da Demanda *</label>
+          <input type="text" id="demanda-titulo" required placeholder="Ex: Agendar ASO Periódico 12 vidas"
+            class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Setor Responsável</label>
+            <select id="demanda-setor" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500">
+              <option value="agendamento">Agendamento</option>
+              <option value="comercial">Comercial</option>
+              <option value="tecnico">Técnico SST</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Prioridade</label>
+            <select id="demanda-prioridade" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500">
+              <option value="baixa">Baixa</option>
+              <option value="media" selected>Média</option>
+              <option value="alta">Alta</option>
+              <option value="urgente">Urgente</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Descrição / Detalhes</label>
+          <textarea id="demanda-descricao" rows="3" placeholder="Informações dos exames, nomes dos colaboradores ou observações da empresa..."
+            class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 resize-none focus:outline-none focus:border-cyan-500"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="fecharModalDemanda()"
+            class="px-3 py-1.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition">
+            Cancelar
+          </button>
+          <button type="submit"
+            class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow transition">
+            Salvar Demanda
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    feather.replace();
+  </script>
+</body>
+</html>
