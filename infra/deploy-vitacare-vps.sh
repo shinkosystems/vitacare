@@ -11,11 +11,12 @@ REMOTE_DIR="/opt/vitacare"
 LOCAL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "🚀 [1/4] Criando estrutura de diretórios na VPS (${REMOTE_DIR})..."
-ssh "${VPS_HOST}" "mkdir -p ${REMOTE_DIR}/infra ${REMOTE_DIR}/data/postgres ${REMOTE_DIR}/data/waha ${REMOTE_DIR}/backups"
+ssh "${VPS_HOST}" "mkdir -p ${REMOTE_DIR}/infra ${REMOTE_DIR}/app ${REMOTE_DIR}/data/postgres ${REMOTE_DIR}/data/waha ${REMOTE_DIR}/backups"
 
-echo "📦 [2/4] Sincronizando arquivos de configuração e orquestração..."
-scp "${LOCAL_DIR}/infra/docker-compose.vitacare.yml" "${VPS_HOST}:${REMOTE_DIR}/infra/docker-compose.yml"
+echo "📦 [2/4] Sincronizando arquivos de configuração e aplicação..."
+scp "${LOCAL_DIR}/infra/docker-compose.yml" "${VPS_HOST}:${REMOTE_DIR}/infra/docker-compose.yml"
 scp "${LOCAL_DIR}/infra/backup-soberano.sh" "${VPS_HOST}:${REMOTE_DIR}/infra/backup-soberano.sh"
+scp -r "${LOCAL_DIR}/app" "${VPS_HOST}:${REMOTE_DIR}/"
 
 # Se o .env de produção ainda não existir na VPS, copia o template .env.example
 ssh "${VPS_HOST}" "[ -f ${REMOTE_DIR}/infra/.env ] || cp ${REMOTE_DIR}/infra/docker-compose.yml ${REMOTE_DIR}/infra/.env" 2>/dev/null || true
